@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Essay SDG &amp; Proyek Interaktif — SIG Web Booster | Dr. Syahriol Sitorus, M.IT</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script>
+(function(){
+  try{
+    var t = localStorage.getItem('sigweb-theme-m11') || 'dark';
+    document.documentElement.setAttribute('data-theme', t);
+  }catch(e){
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
+</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --bg:#080e1a; --bg-grad-1:#123152; --bg-grad-2:#1a2a4d;
+    --card:#111c31; --card2:#16233c; --line:#1f3155;
+    --line-hover:#2c4d7d; --line-hover2:#2f5288;
+    --txt:#e6edf7; --muted:#93a4c0; --muted-2:#c5d6ec;
+    --nav-bg:rgba(8,14,26,.85); --watermark:#ffffff08;
+    --surface-1:#0a1425; --surface-2:#0d1a2e; --surface-3:#060d19;
+    --surface-4:#0b1729; --surface-5:#132339;
+    --surface-hover:#1d3050; --surface-hover2:#111f36; --row-hover:#0d1a2e88;
+    --code-txt:#b9d4f0; --expr-txt:#9fd0f0; --step-txt:#c5d6ec;
+    --cyan:#22d3ee; --green:#34d399; --amber:#fbbf24; --violet:#a78bfa; --red:#f87171;
+    --code-kw:#c084fc; --code-str:#6ee7b7; --code-cmt:#4b6382; --code-fn:#7dd3fc; --code-num:#fbbf24;
+    --green-surface:#04291f; --green-border:#0e5a44; --green-surface-hover:#0e3b2b;
+    --amber-surface:#3d2d08; --amber-surface-alt:#2b2104; --amber-border:#5c4710;
+    --red-surface:#2b0d0d; --red-border:#6b1414; --red-surface-dark:#3b0d0d;
+    --pink-surface:#2b0f1f; --pink-border:#5a2342; --violet-surface:#3a2b6b;
+    --result-bg-1:#0b2a3d; --result-bg-2:#0d3547; --result-border:#14546b;
+    --popup-bg:#0f1b2e; --popup-border:#23406b;
+    --leaflet-ctrl-bg:#132339; --leaflet-ctrl-txt:#dbe7f7; --leaflet-ctrl-border:#1f3155;
+    --leaflet-ctrl-hover:#1d3050; --leaflet-attr-bg:#0a1425cc; --leaflet-attr-txt:#6b7f9e;
+    --map-bg:#0b1524; --toast-bg:#0e2a3d; --toggle-thumb:#0e7490;
+  }
+  [data-theme="light"]{
+    --bg:#f4f7fc; --bg-grad-1:#dbeafe; --bg-grad-2:#e0e7ff;
+    --card:#ffffff; --card2:#eef3fa; --line:#d5dde8;
+    --line-hover:#b8c5dc; --line-hover2:#94a8c7;
+    --txt:#172033; --muted:#5f6f88; --muted-2:#3d4d66;
+    --nav-bg:rgba(255,255,255,.9); --watermark:#00000008;
+    --surface-1:#f8fafd; --surface-2:#eef3fa; --surface-3:#f5f8fc;
+    --surface-4:#e8eef6; --surface-5:#e2eaf4;
+    --surface-hover:#d8e4f0; --surface-hover2:#eef3fa; --row-hover:#eef3fa;
+    --code-txt:#1e3a5f; --expr-txt:#0e7490; --step-txt:#2a3a52;
+    --cyan:#0e7490; --green:#047857; --amber:#b45309; --violet:#6d28d9; --red:#b91c1c;
+    --code-kw:#7c3aed; --code-str:#047857; --code-cmt:#6b7280; --code-fn:#0369a1; --code-num:#b45309;
+    --green-surface:#ecfdf5; --green-border:#6ee7b7; --green-surface-hover:#d1fae5;
+    --amber-surface:#fffbeb; --amber-surface-alt:#fef3c7; --amber-border:#fcd34d;
+    --red-surface:#fef2f2; --red-border:#fca5a5; --red-surface-dark:#fecaca;
+    --pink-surface:#fdf2f8; --pink-border:#fbcfe8; --violet-surface:#ede9fe;
+    --result-bg-1:#e0f2fe; --result-bg-2:#e0f7fa; --result-border:#93c5fd;
+    --popup-bg:#ffffff; --popup-border:#d5dde8;
+    --leaflet-ctrl-bg:#ffffff; --leaflet-ctrl-txt:#172033; --leaflet-ctrl-border:#d5dde8;
+    --leaflet-ctrl-hover:#eef3fa; --leaflet-attr-bg:#ffffffe6; --leaflet-attr-txt:#5f6f88;
+    --map-bg:#e8eef6; --toast-bg:#ffffff; --toggle-thumb:#0e7490;
+  }
+
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 12% -12%, var(--bg-grad-1) 0%, transparent 55%),
+      radial-gradient(1000px 520px at 92% -5%, var(--bg-grad-2) 0%, transparent 50%),
+      var(--bg);
+    color:var(--txt); line-height:1.65; min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    transition:background-color .35s ease, color .35s ease;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+
+  nav, footer, .card, .mapbox, .statusbar, .formula, .derivation,
+  .codecard, .codehead, .step, .result-banner, .qbox, .opt, .explain,
+  .essay-card, .essay-head, .checkitem, .cbox,
+  .input-row input, .input-row textarea,
+  .iter-table td, .iter-table th, table td, table th,
+  .btn, .toggle-sol, .copybtn, .level-tab, .theme-toggle,
+  #toast, .navlinks a, .pill, .essay-badge, .tag, .scorebar, .cbar,
+  #map, .leaflet-popup-content-wrapper, .leaflet-popup-tip,
+  .answer-area, .answer-area textarea, .save-answer-btn, .char-count,
+  .kanban-col, .kanban-card, .sdg-bar, .stat-box, .filter-btn, .self-assess {
+    transition: background-color .35s ease, border-color .35s ease, color .35s ease, box-shadow .35s ease;
+  }
+  .step{transition: opacity .3s, transform .3s, background-color .35s ease, border-color .35s ease, color .35s ease}
+  .card{transition: transform .22s ease, border-color .35s ease, box-shadow .22s ease, background-color .35s ease, color .35s ease}
+
+  nav{position:sticky;top:0;z-index:1200;background:var(--nav-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .progress{height:3px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--amber));width:0%;transition:width .1s linear}
+  .navinner{display:flex;align-items:center;gap:14px;padding:11px 18px;max-width:1180px;margin:0 auto;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:.95rem}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+  .navlinks{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+  .navlinks a{color:var(--muted);text-decoration:none;font-size:.78rem;font-weight:600;padding:6px 10px;border-radius:999px;border:1px solid transparent}
+  .navlinks a:hover{color:var(--txt);background:var(--card2);border-color:var(--line)}
+  .navlinks a.hot{color:var(--amber);border-color:var(--amber-border)}
+
+  .theme-toggle{
+    flex-shrink:0;width:40px;height:40px;border-radius:50%;
+    background:var(--card2);border:1px solid var(--line);cursor:pointer;
+    position:relative;overflow:hidden;display:grid;place-items:center;
+    margin-left:8px;padding:0;
+    transition: background-color .35s ease, border-color .35s ease, transform .2s ease, box-shadow .2s ease;
+  }
+  .theme-toggle:hover{border-color:var(--cyan);transform:scale(1.08);box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+  [data-theme="light"] .theme-toggle:hover{border-color:var(--amber);box-shadow:0 0 0 3px rgba(251,191,36,.2)}
+  .theme-toggle .tt-icon{position:absolute;font-size:18px;line-height:1;transition:opacity .3s ease, transform .45s cubic-bezier(.4,0,.2,1), color .35s ease;}
+  .theme-toggle .tt-moon{opacity:1;transform:rotate(0) scale(1);color:var(--cyan)}
+  .theme-toggle .tt-sun{opacity:0;transform:rotate(-90deg) scale(.5);color:var(--amber)}
+  [data-theme="light"] .theme-toggle .tt-moon{opacity:0;transform:rotate(90deg) scale(.5)}
+  [data-theme="light"] .theme-toggle .tt-sun{opacity:1;transform:rotate(0) scale(1);color:var(--amber)}
+
+  header{padding:48px 0 24px;text-align:center}
+  .pillrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+  .pill{font-size:.7rem;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:5px 13px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted)}
+  .pill.c{color:var(--cyan);border-color:var(--cyan);background:transparent}
+  [data-theme="light"] .pill.c{background:#e0f7fa;border-color:#67e8f9}
+  .pill.g{color:var(--green);border-color:var(--green);background:transparent}
+  [data-theme="light"] .pill.g{background:#ecfdf5;border-color:#6ee7b7}
+  .pill.a{color:var(--amber);border-color:var(--amber);background:transparent}
+  [data-theme="light"] .pill.a{background:#fffbeb;border-color:#fcd34d}
+  .pill.v{color:var(--violet);border-color:var(--violet);background:transparent}
+  h1{font-size:clamp(1.65rem,4vw,2.5rem);line-height:1.18;font-weight:900;letter-spacing:-.5px}
+  h1 .grad{background:linear-gradient(90deg,var(--cyan),var(--green));-webkit-background-clip:text;background-clip:text;color:transparent}
+  h1 .grad2{background:linear-gradient(90deg,var(--amber),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);max-width:740px;margin:14px auto 0;font-size:.97rem}
+  .author{margin-top:20px;display:inline-flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);padding:9px 18px;border-radius:999px;font-size:.85rem}
+  .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--violet));display:grid;place-items:center;font-weight:900;font-size:.75rem;color:#04121d}
+
+  section{padding:32px 0;scroll-margin-top:76px}
+  .stitle{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  .stitle .ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-size:1.1rem;background:var(--card2);border:1px solid var(--line)}
+  h2{font-size:1.32rem;font-weight:800;letter-spacing:-.3px}
+  .sdesc{color:var(--muted);font-size:.9rem;margin-bottom:18px}
+
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .card{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:14px;padding:18px;position:relative;overflow:hidden}
+  .card h3{font-size:.95rem;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .card p{font-size:.845rem;color:var(--muted)}
+
+  .btn{font-family:inherit;font-size:.79rem;font-weight:700;cursor:pointer;background:var(--card2);color:var(--txt);border:1px solid var(--line);padding:8px 14px;border-radius:9px;display:inline-flex;align-items:center;gap:6px}
+  .btn:hover{background:var(--surface-hover);border-color:var(--line-hover2);transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(135deg,#0e7490,#0891b2);border-color:var(--cyan);color:#fff}
+
+  /* ============================================================
+     ESSAY SDG — REVAMPED
+     ============================================================ */
+  .essay-hero{
+    background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));
+    border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:18px;
+    position:relative;overflow:hidden;
+  }
+  .essay-hero::before{
+    content:'';position:absolute;top:-50%;right:-10%;width:320px;height:320px;
+    background:radial-gradient(circle,rgba(34,211,238,.18),transparent 70%);
+    border-radius:50%;pointer-events:none;
+  }
+  .essay-hero h3{font-size:1.05rem;font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .essay-hero p{font-size:.84rem;color:var(--muted);max-width:640px}
+
+  .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:16px}
+  .stat-box{
+    background:var(--surface-1);border:1px solid var(--line);border-radius:12px;
+    padding:14px;text-align:center;position:relative;overflow:hidden;
+  }
+  .stat-box .stat-val{font-size:1.7rem;font-weight:900;font-family:'Fira Code',monospace;color:var(--cyan);line-height:1.1}
+  .stat-box .stat-lbl{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+  .stat-box.g .stat-val{color:var(--green)}
+  .stat-box.a .stat-val{color:var(--amber)}
+  .stat-box.v .stat-val{color:var(--violet)}
+
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+  .filter-btn{
+    font-family:inherit;font-size:.76rem;font-weight:800;cursor:pointer;
+    background:var(--card2);color:var(--muted);border:1px solid var(--line);
+    padding:7px 14px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .filter-btn:hover{color:var(--txt);border-color:var(--line-hover2)}
+  .filter-btn.active{background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+  .filter-btn.sdg9.active{background:linear-gradient(135deg,#6d28d9,#8b5cf6);border-color:var(--violet);box-shadow:0 0 0 3px rgba(167,139,250,.18)}
+  .filter-btn.sdg11.active{background:linear-gradient(135deg,#b45309,#d97706);border-color:var(--amber);box-shadow:0 0 0 3px rgba(251,191,36,.18)}
+
+  .essay-card{
+    background:linear-gradient(160deg,var(--card),var(--card2));
+    border:1px solid var(--line);border-radius:16px;margin-bottom:16px;
+    overflow:hidden;position:relative;
+    transition: transform .25s ease, border-color .35s ease, box-shadow .25s ease;
+  }
+  .essay-card::before{
+    content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+    background:linear-gradient(180deg,var(--cyan),var(--violet));
+  }
+  .essay-card.lvl-mudah::before{background:linear-gradient(180deg,#34d399,#10b981)}
+  .essay-card.lvl-menengah::before{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+  .essay-card.lvl-sukar::before{background:linear-gradient(180deg,#f87171,#dc2626)}
+  .essay-card:hover{border-color:var(--line-hover);transform:translateY(-2px);box-shadow:0 16px 40px -20px rgba(0,0,0,.5)}
+  .essay-card.answered{border-color:var(--green-border)}
+
+  .essay-head{display:flex;align-items:flex-start;gap:12px;padding:16px 18px 12px 22px;background:var(--surface-2);flex-wrap:wrap}
+  .essay-badge{flex:0 0 auto;font-size:.68rem;font-weight:900;padding:4px 11px;border-radius:999px;text-transform:uppercase;letter-spacing:.5px}
+  .badge-mudah{background:var(--green-surface);color:var(--green);border:1px solid var(--green-border)}
+  .badge-menengah{background:var(--amber-surface);color:var(--amber);border:1px solid var(--amber-border)}
+  .badge-sukar{background:var(--red-surface);color:var(--red);border:1px solid var(--red-border)}
+  .essay-title{flex:1;font-weight:800;font-size:.92rem;line-height:1.5;min-width:200px}
+  .answered-pill{
+    flex:0 0 auto;font-size:.66rem;font-weight:800;
+    padding:3px 10px;border-radius:999px;
+    background:var(--surface-1);border:1px solid var(--line);color:var(--muted);
+    display:inline-flex;align-items:center;gap:4px;
+  }
+  .answered-pill.on{background:var(--green-surface);color:var(--green);border-color:var(--green-border)}
+
+  .essay-body{padding:16px 18px 6px 22px;font-size:.85rem;color:var(--muted-2)}
+  .essay-body .q-meta{font-size:.72rem;color:var(--muted);margin-top:8px;font-style:italic}
+
+  .sdg-tag{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:.66rem;font-weight:800;letter-spacing:.3px;
+    padding:3px 10px;border-radius:999px;margin-top:10px;
+    background:var(--surface-5);border:1px solid var(--line);color:var(--muted);
+  }
+  .sdg-tag.sdg9{color:var(--violet);border-color:var(--violet-surface);background:rgba(167,139,250,.08)}
+  .sdg-tag.sdg11{color:var(--amber);border-color:var(--amber-border);background:rgba(251,191,36,.08)}
+
+  .answer-area{padding:14px 18px 18px 22px;border-top:1px dashed var(--line)}
+  .answer-area .ans-label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+  .answer-area .ans-label span{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .char-count{font-size:.7rem;font-weight:700;color:var(--muted);font-family:'Fira Code',monospace}
+  .char-count.ok{color:var(--green)}
+  .char-count.low{color:var(--amber)}
+  .answer-area textarea{
+    width:100%;min-height:120px;resize:vertical;
+    background:var(--surface-1);border:1px solid var(--line);
+    color:var(--txt);padding:12px 14px;border-radius:10px;
+    font-family:inherit;font-size:.85rem;line-height:1.6;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .answer-area textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(34,211,238,.12)}
+  .answer-area textarea.saved{border-color:var(--green);background:var(--green-surface)}
+
+  /* progress bar per essay */
+  .ans-progress{height:5px;background:var(--surface-1);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:8px 0 0}
+  .ans-progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .3s ease}
+  .ans-progress > i.full{background:linear-gradient(90deg,#34d399,#10b981)}
+
+  .answer-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  .save-answer-btn{
+    font-family:inherit;font-size:.78rem;font-weight:800;cursor:pointer;
+    background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff;
+    border:1px solid var(--cyan);padding:8px 18px;border-radius:9px;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:transform .15s, box-shadow .15s;
+  }
+  .save-answer-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px -6px rgba(34,211,238,.4)}
+  .save-answer-btn.saved{background:linear-gradient(135deg,#047857,#059669);border-color:var(--green)}
+  .clear-answer-btn{
+    font-family:inherit;font-size:.74rem;font-weight:700;cursor:pointer;
+    background:transparent;color:var(--muted);border:1px solid var(--line);
+    padding:7px 14px;border-radius:9px;
+  }
+  .clear-answer-btn:hover{color:var(--red);border-color:var(--red-border);background:var(--red-surface)}
+  .save-hint{font-size:.7rem;color:var(--muted);font-style:italic}
+
+  /* self-assessment */
+  .self-assess{
+    margin-top:12px;padding:12px 14px;background:var(--surface-1);
+    border:1px solid var(--line);border-radius:10px;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .self-assess .sa-label{font-size:.74rem;font-weight:700;color:var(--muted-2);flex:0 0 auto}
+  .sa-stars{display:flex;gap:4px}
+  .sa-star{
+    font-size:1.15rem;cursor:pointer;color:var(--line-hover2);
+    transition:color .15s, transform .15s;user-select:none;
+  }
+  .sa-star:hover{transform:scale(1.15)}
+  .sa-star.on{color:var(--amber);text-shadow:0 0 8px rgba(251,191,36,.5)}
+  .sa-value{font-size:.72rem;font-weight:800;color:var(--amber);font-family:'Fira Code',monospace;margin-left:auto}
+
+  /* ============================================================
+     PROYEK — KANBAN
+     ============================================================ */
+  .kanban-board{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:14px;margin-top:18px;
+  }
+  .kanban-col{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:14px;
+    padding:14px;min-height:200px;
+  }
+  .kanban-col-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--line);
+  }
+  .kanban-col-head .kc-title{font-size:.82rem;font-weight:900;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.4px}
+  .kanban-col-head .kc-count{
+    font-size:.7rem;font-weight:900;font-family:'Fira Code',monospace;
+    background:var(--surface-5);border:1px solid var(--line);
+    padding:2px 9px;border-radius:999px;color:var(--muted-2);
+  }
+  .kanban-col[data-col="todo"] .kc-title{color:var(--amber)}
+  .kanban-col[data-col="doing"] .kc-title{color:var(--cyan)}
+  .kanban-col[data-col="done"] .kc-title{color:var(--green)}
+
+  .kanban-card{
+    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line-hover2);
+    border-radius:10px;padding:11px 13px;margin-bottom:9px;cursor:pointer;
+    transition:transform .15s, border-color .2s, box-shadow .2s;
+    position:relative;
+  }
+  .kanban-card:hover{transform:translateX(3px);border-color:var(--line-hover);box-shadow:0 6px 18px -10px rgba(0,0,0,.4)}
+  .kanban-card[data-status="todo"]{border-left-color:var(--amber)}
+  .kanban-card[data-status="doing"]{border-left-color:var(--cyan)}
+  .kanban-card[data-status="done"]{border-left-color:var(--green);opacity:.85}
+  .kanban-card[data-status="done"] .kc-card-title{text-decoration:line-through;color:var(--muted)}
+  .kc-card-title{font-size:.8rem;font-weight:700;margin-bottom:4px}
+  .kc-card-sub{font-size:.72rem;color:var(--muted)}
+  .kc-card-meta{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+  .kc-chip{
+    font-size:.62rem;font-weight:800;padding:2px 8px;border-radius:999px;
+    background:var(--surface-5);border:1px solid var(--line);color:var(--muted);
+  }
+  .kc-chip.sdg9{color:var(--violet);border-color:var(--violet-surface)}
+  .kc-chip.sdg11{color:var(--amber);border-color:var(--amber-border)}
+  .kc-card-actions{display:flex;gap:5px;margin-top:8px}
+  .kc-mini-btn{
+    font-family:inherit;font-size:.66rem;font-weight:800;cursor:pointer;
+    background:var(--surface-1);border:1px solid var(--line);color:var(--muted-2);
+    padding:3px 9px;border-radius:6px;
+  }
+  .kc-mini-btn:hover{background:var(--surface-hover);color:var(--cyan);border-color:var(--line-hover2)}
+  .kc-mini-btn.next{color:var(--cyan)}
+  .kc-mini-btn.done-btn{color:var(--green)}
+
+  /* progress ring */
+  .proj-progress{
+    display:flex;align-items:center;gap:18px;padding:16px 20px;
+    background:linear-gradient(135deg,var(--result-bg-1),var(--result-bg-2));
+    border:1px solid var(--result-border);border-radius:14px;margin-bottom:16px;flex-wrap:wrap;
+  }
+  .ring-wrap{position:relative;width:80px;height:80px;flex:0 0 auto}
+  .ring-wrap svg{transform:rotate(-90deg)}
+  .ring-wrap .ring-bg{fill:none;stroke:var(--line);stroke-width:8}
+  .ring-wrap .ring-fg{fill:none;stroke:url(#ringGrad);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+  .ring-wrap .ring-txt{
+    position:absolute;inset:0;display:grid;place-items:center;
+    font-size:1.05rem;font-weight:900;font-family:'Fira Code',monospace;color:var(--cyan);
+  }
+  .proj-progress .pp-info{flex:1;min-width:180px}
+  .proj-progress .pp-info h4{font-size:.95rem;font-weight:800;margin-bottom:3px}
+  .proj-progress .pp-info p{font-size:.8rem;color:var(--muted)}
+
+  /* SDG impact */
+  .sdg-impact{display:grid;gap:12px;margin-top:16px}
+  .sdg-bar-wrap{
+    background:var(--surface-1);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+  }
+  .sdg-bar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap}
+  .sdg-bar-head .sb-title{font-size:.82rem;font-weight:800;display:flex;align-items:center;gap:7px}
+  .sdg-bar-head .sb-val{font-size:.8rem;font-weight:900;font-family:'Fira Code',monospace}
+  .sdg-bar{height:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .sdg-bar > i{display:block;height:100%;width:0%;transition:width .7s cubic-bezier(.2,.9,.3,1)}
+  .sdg-bar.sdg9 > i{background:linear-gradient(90deg,#6d28d9,#a78bfa)}
+  .sdg-bar.sdg11 > i{background:linear-gradient(90deg,#b45309,#fbbf24)}
+  .sdg-bar-head.sdg9 .sb-val{color:var(--violet)}
+  .sdg-bar-head.sdg11 .sb-val{color:var(--amber)}
+
+  /* ============================================================
+     SUPPORTING SECTIONS (compact)
+     ============================================================ */
+  .mapbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;overflow:hidden}
+  #map{height:420px;border-radius:11px;z-index:1;background:var(--map-bg)}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;padding:0 2px 12px}
+  .btn.active{background:linear-gradient(135deg,#0e7490,#0891b2);border-color:var(--cyan);color:#fff;box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+  .btn.warn.active{background:linear-gradient(135deg,#b45309,#d97706);border-color:var(--amber);box-shadow:0 0 0 3px rgba(251,191,36,.15)}
+  .btn.ok.active{background:linear-gradient(135deg,#047857,#059669);border-color:var(--green);box-shadow:0 0 0 3px rgba(52,211,153,.15)}
+  .statusbar{margin-top:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);background:var(--surface-1);border:1px solid var(--line);border-radius:9px;padding:9px 13px}
+  .statusbar b{color:var(--cyan)}
+  .leaflet-popup-content-wrapper{background:var(--popup-bg)!important;color:var(--txt)!important;border-radius:10px!important;border:1px solid var(--popup-border)!important;box-shadow:0 12px 32px -10px rgba(0,0,0,.4)!important}
+  .leaflet-popup-tip{background:var(--popup-bg)!important;border:1px solid var(--popup-border)!important}
+  .leaflet-popup-content{margin:12px 14px;font-size:.82rem;line-height:1.5}
+  .leaflet-popup-content h4{font-size:.9rem;margin-bottom:4px;color:var(--cyan)}
+  .leaflet-container a.leaflet-popup-close-button{color:var(--muted)!important}
+  .leaflet-control-attribution{background:var(--leaflet-attr-bg)!important;color:var(--leaflet-attr-txt)!important;font-size:10px!important}
+  .leaflet-control-attribution a{color:var(--cyan)!important}
+  .leaflet-bar a{background:var(--leaflet-ctrl-bg)!important;color:var(--leaflet-ctrl-txt)!important;border-color:var(--leaflet-ctrl-border)!important}
+  .leaflet-bar a:hover{background:var(--leaflet-ctrl-hover)!important}
+  .leaflet-control-layers{background:var(--leaflet-ctrl-bg)!important;color:var(--leaflet-ctrl-txt)!important;border:1px solid var(--leaflet-ctrl-border)!important}
+  .leaflet-control-layers a{color:var(--leaflet-ctrl-txt)!important}
+
+  .formula{background:var(--surface-3);border:1px solid var(--line);border-left:3px solid var(--cyan);border-radius:8px;padding:14px 16px;margin:12px 0;font-family:'Fira Code','Consolas',monospace;font-size:.83rem;overflow-x:auto;color:var(--code-txt)}
+  .formula .hl{color:var(--cyan);font-weight:700}
+  .formula .cm{color:var(--code-cmt);font-style:italic}
+
+  .toggle-sol{font-family:inherit;font-size:.75rem;font-weight:800;cursor:pointer;background:var(--surface-5);color:var(--cyan);border:1px solid var(--line);padding:6px 13px;border-radius:7px;display:inline-flex;align-items:center;gap:6px}
+  .toggle-sol:hover{background:var(--surface-hover)}
+  .toggle-sol.open{background:linear-gradient(135deg,#0e7490,#0891b2);border-color:var(--cyan);color:#fff}
+  .derivation{display:none;margin-top:12px;padding:14px;background:var(--surface-1);border:1px dashed var(--line-hover);border-radius:10px}
+  .derivation.show{display:block;animation:fadeIn .3s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .derivation ol{padding-left:20px;font-size:.82rem;color:var(--muted-2)}
+  .derivation ol li{margin-bottom:8px;padding-left:4px}
+  .derivation .step-label{color:var(--amber);font-weight:800;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px}
+
+  .codecard{background:var(--surface-3);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .codehead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;background:var(--surface-4);border-bottom:1px solid var(--line);font-size:.75rem;font-weight:700;color:var(--muted)}
+  .copybtn{font-family:inherit;font-size:.7rem;font-weight:800;cursor:pointer;background:var(--surface-5);color:var(--cyan);border:1px solid var(--line);padding:4px 11px;border-radius:6px}
+  .copybtn:hover{background:var(--surface-hover)}
+  pre{padding:15px 16px;overflow-x:auto;font-size:.78rem;line-height:1.75}
+  code{font-family:'Fira Code','Consolas',monospace;color:var(--code-txt)}
+  .k{color:var(--code-kw)}.s{color:var(--code-str)}.c{color:var(--code-cmt);font-style:italic}.f{color:var(--code-fn)}.n{color:var(--code-num)}
+
+  .qbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:12px}
+  .qnum{font-size:.7rem;font-weight:900;color:var(--cyan);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+  .qtext{font-weight:700;font-size:.92rem;margin-bottom:13px}
+  .opt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;margin-bottom:7px;border:1px solid var(--line);border-radius:9px;cursor:pointer;font-size:.84rem;background:var(--surface-1)}
+  .opt:hover{border-color:var(--line-hover2);background:var(--surface-hover2)}
+  .opt .ltr{flex:0 0 22px;height:22px;border-radius:50%;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;font-size:.7rem;font-weight:900;color:var(--muted)}
+  .opt.correct{border-color:var(--green-border);background:var(--green-surface)}
+  .opt.correct .ltr{background:var(--green);color:var(--card);border-color:var(--green)}
+  [data-theme="light"] .opt.correct .ltr{color:#fff}
+  .opt.wrong{border-color:var(--red-border);background:var(--red-surface)}
+  .opt.wrong .ltr{background:var(--red);color:var(--card);border-color:var(--red)}
+  [data-theme="light"] .opt.wrong .ltr{color:#fff}
+  .opt.locked{cursor:default}
+  .explain{margin-top:10px;font-size:.79rem;color:var(--muted);background:var(--surface-1);border-left:3px solid var(--cyan);padding:9px 13px;border-radius:0 8px 8px 0;display:none}
+  .explain.show{display:block}
+  .scorebar{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--result-bg-1),var(--result-bg-2));border:1px solid var(--result-border);border-radius:13px;padding:16px 20px;margin-top:8px;flex-wrap:wrap}
+  .scorebar .big{font-size:1.9rem;font-weight:900;color:var(--cyan);font-family:'Fira Code',monospace}
+
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  th,td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--surface-2);font-weight:800;color:var(--cyan);font-size:.76rem;text-transform:uppercase;letter-spacing:.5px}
+  tr:hover td{background:var(--row-hover)}
+
+  .cbar{height:9px;background:var(--surface-1);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:14px 0 8px}
+  .cbar > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .35s ease}
+
+  #toast{position:fixed;bottom:26px;left:50%;transform:translate(-50%,90px);background:var(--toast-bg);border:1px solid var(--cyan);color:var(--txt);padding:11px 22px;border-radius:999px;font-size:.83rem;font-weight:700;box-shadow:0 12px 40px -10px rgba(0,0,0,.4);transition:transform .32s cubic-bezier(.2,.9,.3,1.4);z-index:3000;max-width:90vw;text-align:center}
+  #toast.show{transform:translate(-50%,0)}
+
+  footer{text-align:center;padding:38px 18px 48px;color:var(--muted);font-size:.78rem;border-top:1px solid var(--line);margin-top:30px}
+  footer b{color:var(--txt)}
+
+  @media(max-width:640px){
+    #map{height:360px}
+    header{padding:34px 0 18px}
+    .navlinks a{padding:5px 8px;font-size:.72rem}
+    .theme-toggle{width:36px;height:36px;margin-left:4px}
+    .theme-toggle .tt-icon{font-size:16px}
+    .essay-head{padding:14px 14px 10px 18px}
+    .essay-body{padding:14px 14px 4px 18px}
+    .answer-area{padding:12px 14px 14px 18px}
+    .kanban-board{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="progress" id="progress"></div>
+  <div class="navinner">
+    <div class="brand"><span class="dot"></span> SIG Web Booster</div>
+    <div class="navlinks">
+      <a href="#essay" class="hot">✍️ Essay SDG</a>
+      <a href="#proyek" class="hot">📦 Proyek</a>
+      <a href="#materi">Materi</a>
+      <a href="#peta">Lab Peta</a>
+      <a href="#kode">Kode</a>
+      <a href="#kuis">Kuis</a>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema" title="Ganti tema terang/gelap">
+      <span class="tt-icon tt-moon">☾</span>
+      <span class="tt-icon tt-sun">☀</span>
+    </button>
+  </div>
+</nav>
+
+<header class="wrap">
+  <div class="pillrow">
+    <span class="pill c">Sub-CPMK 7 · C4</span>
+    <span class="pill a">Proyek (Non Tes)</span>
+    <span class="pill g">SDG 9</span>
+    <span class="pill a">SDG 11</span>
+  </div>
+  <h1>Essay <span class="grad2">SDG</span> &amp; <span class="grad">Proyek</span><br>SIG Web Interaktif</h1>
+  <p class="sub">Fokus pada <b>soal essay bertema SDG 9 &amp; 11</b> dan <b>manajemen proyek Kanban</b>. Tulis jawaban, nilai diri sendiri, pindahkan kartu proyek, dan lihat dampak SDG secara real-time — semuanya tersimpan otomatis.</p>
+  <div class="author">
+    <span class="avatar">SS</span>
+    <span><b>Dr. Syahriol Sitorus, M.IT</b> · Pengembangan SIG Web</span>
+  </div>
+</header>
+
+<!-- ============ ESSAY SDG ============ -->
+<section id="essay" class="wrap">
+  <div class="stitle"><div class="ico">✍️</div><h2>Essay Bertema SDG</h2></div>
+  <p class="sdesc">Tiga level — mudah, menengah, sukar. Semua soal bertema <b>SDG 9 (Industri &amp; Inovasi)</b> dan <b>SDG 11 (Kota Berkelanjutan)</b>. Tulis jawaban, simpan, dan nilai diri sendiri.</p>
+
+  <!-- Dashboard -->
+  <div class="essay-hero">
+    <h3>📊 Dashboard Essay Anda</h3>
+    <p>Ringkasan progres jawaban essay SDG — diperbarui otomatis saat Anda menulis.</p>
+    <div class="dashboard">
+      <div class="stat-box"><div class="stat-val" id="db-total">0</div><div class="stat-lbl">Soal Terjawab</div></div>
+      <div class="stat-box g"><div class="stat-val" id="db-chars">0</div><div class="stat-lbl">Total Karakter</div></div>
+      <div class="stat-box a"><div class="stat-val" id="db-avg">0</div><div class="stat-lbl">Rata-rata Panjang</div></div>
+      <div class="stat-box v"><div class="stat-val" id="db-self">—</div><div class="stat-lbl">Rata-rata Self-Assess</div></div>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-row">
+    <span style="font-size:.74rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:4px">Filter:</span>
+    <button class="filter-btn active" data-filter="all">🗂️ Semua</button>
+    <button class="filter-btn sdg9" data-filter="sdg9">🏭 SDG 9</button>
+    <button class="filter-btn sdg11" data-filter="sdg11">🏙️ SDG 11</button>
+    <span style="margin-left:auto;font-size:.74rem;color:var(--muted)">
+      <b id="filter-count" style="color:var(--cyan)">9</b> soal ditampilkan
+    </span>
+  </div>
+
+  <div class="level-tabs" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="level-tab active" data-level="mudah" style="font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;background:var(--card2);color:var(--muted);border:1px solid var(--line);padding:9px 17px;border-radius:10px;display:inline-flex;align-items:center;gap:7px">🟢 Mudah</button>
+    <button class="level-tab" data-level="menengah" style="font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;background:var(--card2);color:var(--muted);border:1px solid var(--line);padding:9px 17px;border-radius:10px;display:inline-flex;align-items:center;gap:7px">🟡 Menengah</button>
+    <button class="level-tab" data-level="sukar" style="font-family:inherit;font-size:.82rem;font-weight:800;cursor:pointer;background:var(--card2);color:var(--muted);border:1px solid var(--line);padding:9px 17px;border-radius:10px;display:inline-flex;align-items:center;gap:7px">🔴 Sukar</button>
+  </div>
+
+  <div id="essay-content"></div>
+</section>
+
+<!-- ============ PROYEK KANBAN ============ -->
+<section id="proyek" class="wrap">
+  <div class="stitle"><div class="ico">📦</div><h2>Manajemen Proyek — Kanban Board</h2></div>
+  <p class="sdesc">Klik kartu untuk memindahkan status: <b>To-Do → In Progress → Done</b>. Progres tersimpan otomatis.</p>
+
+  <!-- Progress ring -->
+  <div class="proj-progress">
+    <div class="ring-wrap">
+      <svg width="80" height="80" viewBox="0 0 80 80">
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#22d3ee"/>
+            <stop offset="100%" stop-color="#34d399"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="40" cy="40" r="34"/>
+        <circle class="ring-fg" id="ringFg" cx="40" cy="40" r="34"
+                stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+      </svg>
+      <div class="ring-txt" id="ringTxt">0%</div>
+    </div>
+    <div class="pp-info">
+      <h4>Progres Proyek Tahap 1</h4>
+      <p id="projSummary">0 dari 9 kartu selesai — ayo mulai!</p>
+    </div>
+    <button class="btn" id="resetKanban">🔄 Reset Board</button>
+  </div>
+
+  <div class="kanban-board">
+    <div class="kanban-col" data-col="todo">
+      <div class="kanban-col-head">
+        <span class="kc-title">📋 To-Do</span>
+        <span class="kc-count" id="count-todo">0</span>
+      </div>
+      <div id="col-todo"></div>
+    </div>
+    <div class="kanban-col" data-col="doing">
+      <div class="kanban-col-head">
+        <span class="kc-title">⚙️ In Progress</span>
+        <span class="kc-count" id="count-doing">0</span>
+      </div>
+      <div id="col-doing"></div>
+    </div>
+    <div class="kanban-col" data-col="done">
+      <div class="kanban-col-head">
+        <span class="kc-title">✅ Done</span>
+        <span class="kc-count" id="count-done">0</span>
+      </div>
+      <div id="col-done"></div>
+    </div>
+  </div>
+
+  <!-- SDG Impact -->
+  <div class="card" style="margin-top:20px">
+    <h3>🌍 Dampak Proyek terhadap SDG</h3>
+    <p style="margin-top:4px">Persentase kartu proyek yang selesai (Done) dan kontribusinya ke masing-masing SDG.</p>
+    <div class="sdg-impact">
+      <div class="sdg-bar-wrap">
+        <div class="sdg-bar-head sdg9">
+          <span class="sb-title">🏭 SDG 9 — Industri, Inovasi &amp; Infrastruktur</span>
+          <span class="sb-val" id="sdg9Val">0%</span>
+        </div>
+        <div class="sdg-bar sdg9"><i id="sdg9Bar"></i></div>
+      </div>
+      <div class="sdg-bar-wrap">
+        <div class="sdg-bar-head sdg11">
+          <span class="sb-title">🏙️ SDG 11 — Kota &amp; Permukiman Berkelanjutan</span>
+          <span class="sb-val" id="sdg11Val">0%</span>
+        </div>
+        <div class="sdg-bar sdg11"><i id="sdg11Bar"></i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rubrik -->
+  <div class="card" style="margin-top:16px">
+    <h3>🎓 Rubrik Penilaian Proyek Tahap 1</h3>
+    <table style="margin-top:10px">
+      <thead><tr><th>Kriteria</th><th>Bobot</th><th>Indikator</th></tr></thead>
+      <tbody>
+        <tr><td>Peta tampil &amp; stabil</td><td>20%</td><td>Basemap termuat, tidak ada error console</td></tr>
+        <tr><td>Data spasial terikat</td><td>25%</td><td>Marker/poligon sesuai data, popup informatif</td></tr>
+        <tr><td>Interaktivitas</td><td>25%</td><td>Layer control, event, geolocation/ukur</td></tr>
+        <tr><td>Desain &amp; aksesibilitas</td><td>15%</td><td>Responsif, atribusi, kontras, legenda</td></tr>
+        <tr><td>Dokumentasi &amp; publikasi</td><td>15%</td><td>README jelas, live demo GitHub Pages</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ MATERI (compact) ============ -->
+<section id="materi" class="wrap">
+  <div class="stitle"><div class="ico">📚</div><h2>Fungsionalitas Peta Interaktif</h2></div>
+  <p class="sdesc">Delapan pilar proyek SIG Web tahap 1.</p>
+  <div class="grid g2">
+    <div class="card"><h3>🗺️ Basemap &amp; Tile Layer</h3><p>Peta dasar raster (OSM, CartoDB, Esri) sebagai konteks spasial.</p></div>
+    <div class="card"><h3>📍 Marker &amp; Popup</h3><p><code>L.marker()</code> + <code>bindPopup()</code> untuk informasi on-demand.</p></div>
+    <div class="card"><h3>🧩 Layer Control</h3><p><code>L.control.layers()</code> menyalakan/mematikan layer tematik.</p></div>
+    <div class="card"><h3>⚡ Event &amp; Geolocation</h3><p><code>map.on('click')</code> dan <code>map.locate()</code> untuk interaksi.</p></div>
+  </div>
+</section>
+
+<!-- ============ LAB PETA ============ -->
+<section id="peta" class="wrap">
+  <div class="stitle"><div class="ico">🧭</div><h2>Lab Peta Interaktif</h2></div>
+  <p class="sdesc">Klik tombol untuk mengaktifkan mode, lalu klik pada peta.</p>
+  <div class="mapbox">
+    <div class="toolbar">
+      <button class="btn active" data-mode="marker">📍 Tambah Titik</button>
+      <button class="btn warn" data-mode="distance">📏 Ukur Jarak</button>
+      <button class="btn ok" data-mode="area">⬡ Ukur Luas</button>
+      <button class="btn" id="btnLocate">🛰️ Lokasi Saya</button>
+      <button class="btn" id="btnBase">🔄 Ganti Basemap</button>
+      <button class="btn" id="btnReset">✖ Bersihkan</button>
+    </div>
+    <div id="map"></div>
+    <div class="statusbar">
+      <span>Mode: <b id="statMode">Tambah Titik</b></span>
+      <span>Basemap: <b id="statBase">OpenStreetMap</b></span>
+      <span id="statInfo">Klik pada peta untuk menambahkan titik.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KODE ============ -->
+<section id="kode" class="wrap">
+  <div class="stitle"><div class="ico">💻</div><h2>Resep Kode Siap Pakai</h2></div>
+  <p class="sdesc">Salin, tempel, jalankan.</p>
+  <div class="grid g2">
+    <div class="codecard">
+      <div class="codehead"><span>1 · Inisialisasi Peta</span><button class="copybtn">Salin</button></div>
+      <pre><code><span class="k">const</span> map = L.<span class="f">map</span>(<span class="s">'map'</span>, {
+  center: [<span class="n">3.5952</span>, <span class="n">98.6722</span>],
+  zoom: <span class="n">12</span>
+});
+L.<span class="f">tileLayer</span>(
+  <span class="s">'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'</span>,
+  { maxZoom: <span class="n">19</span>, attribution: <span class="s">'&copy; OSM'</span> }
+).<span class="f">addTo</span>(map);</code></pre>
+    </div>
+    <div class="codecard">
+      <div class="codehead"><span>2 · Marker + Popup</span><button class="copybtn">Salin</button></div>
+      <pre><code>L.<span class="f">marker</span>([<span class="n">3.5750</span>, <span class="n">98.6839</span>])
+  .<span class="f">addTo</span>(map)
+  .<span class="f">bindPopup</span>(<span class="s">'&lt;h4&gt;Istana Maimun&lt;/h4&gt;'</span>)
+  .<span class="f">openPopup</span>();</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KUIS ============ -->
+<section id="kuis" class="wrap">
+  <div class="stitle"><div class="ico">🎯</div><h2>Kuis Cepat</h2></div>
+  <p class="sdesc">Uji pemahaman dasar SIG Web.</p>
+  <div id="quiz"></div>
+  <div class="scorebar">
+    <div><div class="big" id="score">0</div></div>
+    <div style="flex:1;min-width:180px">
+      <div style="font-weight:800;font-size:.9rem">Skor Anda</div>
+      <div style="font-size:.78rem;color:var(--muted)" id="scoreMsg">Belum ada jawaban. Ayo mulai!</div>
+    </div>
+    <button class="btn" id="btnResetQuiz">🔄 Ulangi</button>
+  </div>
+</section>
+
+<footer>
+  <b>Materi Interaktif</b> · Dr. Syahriol Sitorus, M.IT<br>
+  Sub-CPMK 7 — Implementasi SIG Web (Leaflet/OpenLayers) · Pengembangan SIG Web · SDG 9 &amp; 11
+</footer>
+
+<div id="toast">OK</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+const root = document.documentElement;
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(t){
+  root.setAttribute('data-theme', t);
+  try{ localStorage.setItem('sigweb-theme-m11', t); }catch(e){}
+}
+themeToggle.addEventListener('click', ()=>{
+  const cur = root.getAttribute('data-theme') || 'dark';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  toast(next === 'light' ? '☀️ Mode Terang aktif' : '🌙 Mode Gelap aktif');
+});
+
+/* ============ TOAST ============ */
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toastEl.classList.remove('show'), 2200);
+}
+
+/* ============ PROGRESS BAR ============ */
+window.addEventListener('scroll', ()=>{
+  const h = document.documentElement;
+  const p = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  document.getElementById('progress').style.width = p + '%';
+});
+
+/* ============================================================
+   PETA
+   ============================================================ */
+const map = L.map('map', { center: [3.5952, 98.6722], zoom: 12, zoomControl: true });
+const basemaps = {
+  osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap' }),
+  carto: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 20, attribution: '&copy; CARTO' }),
+  sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, attribution: '&copy; Esri' })
+};
+const baseKeys = Object.keys(basemaps);
+const baseNames = { osm:'OpenStreetMap', carto:'CARTO Dark', sat:'Esri Satellite' };
+let baseIdx = 0;
+basemaps.osm.addTo(map);
+
+const places = [
+  { name:'UIN Sumatera Utara', lat:3.5960, lng:98.6740, cat:'Kampus', color:'#22d3ee' },
+  { name:'Istana Maimun', lat:3.5750, lng:98.6839, cat:'Wisata', color:'#fbbf24' },
+  { name:'Lapangan Merdeka', lat:3.5914, lng:98.6731, cat:'Publik', color:'#34d399' },
+  { name:'Bandara Kualanamu', lat:3.6422, lng:98.8853, cat:'Transportasi', color:'#a78bfa' }
+];
+function makeIcon(color){
+  return L.divIcon({
+    className:'',
+    html:'<div style="width:15px;height:15px;border-radius:50%;background:'+color+
+         ';border:2px solid #fff;box-shadow:0 0 0 3px '+color+'44,0 2px 8px #000a"></div>',
+    iconSize:[15,15], iconAnchor:[7.5,7.5], popupAnchor:[0,-9]
+  });
+}
+const tempatLayer = L.layerGroup().addTo(map);
+places.forEach(p=>{
+  L.marker([p.lat,p.lng], {icon: makeIcon(p.color)})
+    .addTo(tempatLayer)
+    .bindPopup('<h4>'+p.name+'</h4><div style="color:#93a4c0;font-size:.78rem">'+p.cat+'</div>')
+    .bindTooltip(p.name, {direction:'top', offset:[0,-8]});
+});
+L.control.layers(
+  { 'OpenStreetMap': basemaps.osm, 'CARTO Dark': basemaps.carto, 'Esri Satellite': basemaps.sat },
+  { 'Titik Penting': tempatLayer },
+  { position:'topright', collapsed:true }
+).addTo(map);
+
+let mode = 'marker';
+let measurePoints = [];
+let measureLayer = null;
+const userLayer = L.layerGroup().addTo(map);
+const statMode = document.getElementById('statMode');
+const statInfo = document.getElementById('statInfo');
+const statBase = document.getElementById('statBase');
+const modeLabels = { marker:'Tambah Titik', distance:'Ukur Jarak', area:'Ukur Luas' };
+
+function setMode(m){
+  mode = m;
+  document.querySelectorAll('.toolbar .btn[data-mode]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.mode === m);
+  });
+  statMode.textContent = modeLabels[m];
+  if(m === 'marker') statInfo.textContent = 'Klik pada peta untuk menambahkan titik.';
+  if(m === 'distance') statInfo.textContent = 'Klik berurutan untuk mengukur jarak.';
+  if(m === 'area') statInfo.textContent = 'Klik minimal 3 titik untuk mengukur luas.';
+  if(measureLayer){ map.removeLayer(measureLayer); measureLayer = null; }
+  measurePoints = [];
+}
+document.querySelectorAll('.toolbar .btn[data-mode]').forEach(btn=>{
+  btn.addEventListener('click', ()=> setMode(btn.dataset.mode));
+});
+function polygonArea(latlngs){
+  const R = 6378137; let area = 0; const n = latlngs.length;
+  for (let i=0;i<n;i++){
+    const p1 = latlngs[i], p2 = latlngs[(i+1)%n];
+    area += (p2.lng - p1.lng) * Math.PI/180 *
+            (2 + Math.sin(p1.lat*Math.PI/180) + Math.sin(p2.lat*Math.PI/180));
+  }
+  return Math.abs(area * R * R / 2);
+}
+function fmtDist(m){ return m >= 1000 ? (m/1000).toFixed(2)+' km' : m.toFixed(0)+' m'; }
+function fmtArea(m2){ return m2 >= 1e6 ? (m2/1e6).toFixed(2)+' km²' : m2.toFixed(0)+' m²'; }
+
+map.on('click', function(e){
+  const ll = e.latlng;
+  if(mode === 'marker'){
+    L.marker(ll, {icon: makeIcon('#f87171')})
+      .addTo(userLayer)
+      .bindPopup('<h4>Titik Baru</h4><p>Lat: '+ll.lat.toFixed(5)+'<br>Lng: '+ll.lng.toFixed(5)+'</p>')
+      .openPopup();
+    statInfo.textContent = 'Titik ditambahkan: ' + ll.lat.toFixed(4) + ', ' + ll.lng.toFixed(4);
+    toast('📍 Titik ditambahkan');
+  } else if(mode === 'distance'){
+    measurePoints.push(ll);
+    if(!measureLayer){
+      measureLayer = L.polyline([], {color:'#fbbf24', weight:4, dashArray:'8 7'}).addTo(map);
+    }
+    measureLayer.setLatLngs(measurePoints);
+    measurePoints.forEach(p=>{
+      L.circleMarker(p, {radius:5, color:'#fbbf24', fillColor:'#fbbf24', fillOpacity:1}).addTo(measureLayer);
+    });
+    let total = 0;
+    for(let i=1;i<measurePoints.length;i++){ total += measurePoints[i-1].distanceTo(measurePoints[i]); }
+    measureLayer.bindTooltip('Total: ' + fmtDist(total), {permanent:true, direction:'top'}).openTooltip();
+    statInfo.textContent = 'Jarak total: ' + fmtDist(total) + ' (' + measurePoints.length + ' titik)';
+  } else if(mode === 'area'){
+    measurePoints.push(ll);
+    if(!measureLayer){
+      measureLayer = L.polygon([], {color:'#34d399', weight:3, fillColor:'#34d399', fillOpacity:.22}).addTo(map);
+    }
+    measureLayer.setLatLngs(measurePoints);
+    if(measurePoints.length >= 3){
+      const a = polygonArea(measurePoints);
+      measureLayer.bindTooltip('Luas: ' + fmtArea(a), {permanent:true, direction:'center'}).openTooltip();
+      statInfo.textContent = 'Luas area: ' + fmtArea(a) + ' (' + measurePoints.length + ' titik)';
+    } else {
+      statInfo.textContent = 'Tambahkan ' + (3 - measurePoints.length) + ' titik lagi.';
+    }
+  }
+});
+
+document.getElementById('btnBase').addEventListener('click', ()=>{
+  map.removeLayer(basemaps[baseKeys[baseIdx]]);
+  baseIdx = (baseIdx + 1) % baseKeys.length;
+  basemaps[baseKeys[baseIdx]].addTo(map);
+  statBase.textContent = baseNames[baseKeys[baseIdx]];
+  toast('🔄 Basemap: ' + baseNames[baseKeys[baseIdx]]);
+});
+document.getElementById('btnLocate').addEventListener('click', ()=>{
+  statInfo.textContent = 'Mencari lokasi Anda...';
+  map.locate({setView:true, maxZoom:15, timeout:8000});
+});
+map.on('locationfound', e=>{
+  L.marker(e.latlng, {icon: makeIcon('#22d3ee')})
+    .addTo(userLayer)
+    .bindPopup('<h4>Lokasi Anda</h4><p>Akurasi ±' + Math.round(e.accuracy) + ' meter</p>')
+    .openPopup();
+  L.circle(e.latlng, {radius:e.accuracy, color:'#22d3ee', weight:1, fillColor:'#22d3ee', fillOpacity:.1}).addTo(userLayer);
+  statInfo.textContent = 'Lokasi: ' + e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4);
+  toast('🛰️ Lokasi ditemukan');
+});
+map.on('locationerror', ()=>{
+  statInfo.textContent = 'Lokasi tidak dapat diakses.';
+  toast('⚠️ Geolocation gagal');
+});
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  userLayer.clearLayers();
+  if(measureLayer){ map.removeLayer(measureLayer); measureLayer = null; }
+  measurePoints = [];
+  statInfo.textContent = 'Peta dibersihkan.';
+  toast('✖ Layer pengguna dibersihkan');
+});
+
+/* ============ COPY CODE ============ */
+document.querySelectorAll('.copybtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const code = btn.closest('.codecard').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(()=>{
+      const old = btn.textContent;
+      btn.textContent = '✓ Tersalin';
+      setTimeout(()=> btn.textContent = old, 1500);
+      toast('📋 Kode disalin');
+    }).catch(()=> toast('⚠️ Gagal menyalin'));
+  });
+});
+
+/* ============================================================
+   ESSAY SDG — DATA & LOGIC
+   ============================================================ */
+const essayData = {
+  mudah: [
+    {
+      title:'SIG Web untuk mendukung SDG 9 — infrastruktur digital',
+      body:'Jelaskan bagaimana peta interaktif berbasis Leaflet dapat mendukung <b>SDG 9 (Industri, Inovasi, dan Infrastruktur)</b>. Sebutkan minimal dua fungsionalitas peta yang relevan dan berikan contoh penerapannya di Indonesia.',
+      meta:'Level: Mudah · C2 (Menjelaskan) · Estimasi 7 menit',
+      sdg:'sdg9', sdgLabel:'SDG 9 · Industri & Inovasi'
+    },
+    {
+      title:'SIG Web partisipatif untuk SDG 11 — kota berkelanjutan',
+      body:'Bagaimana peta partisipatif berbasis SIG Web dapat membantu warga dan pemerintah kota mewujudkan <b>SDG 11 (Kota dan Permukiman Berkelanjutan)</b>? Jelaskan alur pelaporan sederhana dari warga hingga dinas terkait.',
+      meta:'Level: Mudah · C2–C3 · Estimasi 8 menit',
+      sdg:'sdg11', sdgLabel:'SDG 11 · Kota Berkelanjutan'
+    },
+    {
+      title:'Marker & popup untuk fasilitas publik',
+      body:'Tuliskan langkah-langkah menambahkan marker dengan popup pada peta Leaflet yang sudah diinisialisasi. Kaitkan dengan pemanfaatan data fasilitas publik (SDG 11).',
+      meta:'Level: Mudah · C3 (Menerapkan) · Estimasi 6 menit',
+      sdg:'sdg11', sdgLabel:'SDG 11 · Kota Berkelanjutan'
+    }
+  ],
+  menengah: [
+    {
+      title:'Perhitungan jarak Haversine untuk layanan darurat',
+      body:'Dua titik fasilitas kesehatan memiliki koordinat (φ₁, λ₁) dan (φ₂, λ₂). Gunakan formula Haversine untuk menghitung jarak antara keduanya, lalu jelaskan bagaimana hasilnya dapat dipakai untuk <b>SDG 11</b> (akses layanan dasar). Tunjukkan langkah perhitungan dengan contoh angka.',
+      meta:'Level: Menengah · C3–C4 · Estimasi 12 menit',
+      sdg:'sdg11', sdgLabel:'SDG 11 · Kota Berkelanjutan'
+    },
+    {
+      title:'Layer control peta fasilitas pendidikan (SDG 9 & 11)',
+      body:'Rancang struktur data dan layer control di Leaflet untuk memetakan fasilitas pendidikan (SD, SMP, SMA). Jelaskan bagaimana peta ini dapat mendukung perencanaan infrastruktur (<b>SDG 9</b>) dan pemerataan akses pendidikan (<b>SDG 11</b>).',
+      meta:'Level: Menengah · C4–C5 · Estimasi 12 menit',
+      sdg:'sdg9', sdgLabel:'SDG 9 · Industri & Inovasi'
+    },
+    {
+      title:'Analisis luas kawasan rawan banjir',
+      body:'Anda memiliki poligon kawasan rawan banjir dengan 5 titik. Jelaskan metode spherical shoelace untuk menghitung luasnya. Kaitkan hasilnya dengan <b>SDG 11</b> (ketahanan kota terhadap bencana) dan <b>SDG 9</b> (infrastruktur drainase).',
+      meta:'Level: Menengah · C4 · Estimasi 12 menit',
+      sdg:'sdg11', sdgLabel:'SDG 11 · Kota Berkelanjutan'
+    }
+  ],
+  sukar: [
+    {
+      title:'Optimasi render 10.000 titik untuk smart city',
+      body:'Anda membangun SIG Web monitoring fasilitas publik kota (SDG 11) dengan 10.000 titik. Analisis kompleksitas render marker dan query spasial. Usulkan strategi optimasi berlapis (canvas renderer, clustering, R-tree, server-side WFS) dan kaitkan dengan <b>SDG 9</b> (infrastruktur digital) dan <b>SDG 11</b> (kota inklusif).',
+      meta:'Level: Sukar · C4–C6 · Estimasi 18 menit',
+      sdg:'sdg11', sdgLabel:'SDG 11 · Kota Berkelanjutan'
+    },
+    {
+      title:'Poligon antimeridian untuk kawasan konservasi',
+      body:'Sebuah kawasan konservasi (SDG 11 – ruang terbuka hijau) melintasi antimeridian 180° dengan 4 titik. Jelaskan penanganan wrap-around Δλ, hitung luasnya dengan metode spherical shoelace, dan diskusikan mengapa normalisasi Δλ krusial untuk data spasial global.',
+      meta:'Level: Sukar · C4–C5 · Estimasi 16 menit',
+      sdg:'sdg11', sdgLabel:'SDG 11 · Kota Berkelanjutan'
+    },
+    {
+      title:'Arsitektur SIG Web partisipatif untuk SDG 11',
+      body:'Rancang arsitektur sistem SIG Web partisipatif (PPGIS) untuk pelaporan lingkungan kota. Bahas komponen frontend (Leaflet/OpenLayers), backend (WFS/PostGIS), keamanan data, dan tata kelola partisipasi. Kaitkan dengan <b>SDG 9</b> (inovasi digital) dan <b>SDG 11</b> (kota berkelanjutan).',
+      meta:'Level: Sukar · C5–C6 · Estimasi 20 menit',
+      sdg:'sdg9', sdgLabel:'SDG 9 · Industri & Inovasi'
+    }
+  ]
+};
+
+const essayContent = document.getElementById('essay-content');
+let currentLevel = 'mudah';
+let currentFilter = 'all';
+const ESSAY_STORE = 'sigweb-essay-v2-';
+const SELF_STORE = 'sigweb-essay-self-';
+
+function loadAnswer(key){
+  try { return localStorage.getItem(ESSAY_STORE + key) || ''; } catch(e){ return ''; }
+}
+function saveAnswer(key, val){
+  try { localStorage.setItem(ESSAY_STORE + key, val); } catch(e){}
+}
+function loadSelf(key){
+  try { return parseInt(localStorage.getItem(SELF_STORE + key) || '0', 10); } catch(e){ return 0; }
+}
+function saveSelf(key, val){
+  try { localStorage.setItem(SELF_STORE + key, String(val)); } catch(e){}
+}
+
+function updateDashboard(){
+  let total = 0, chars = 0, selfSum = 0, selfCount = 0;
+  ['mudah','menengah','sukar'].forEach(lvl=>{
+    essayData[lvl].forEach((_, i)=>{
+      const key = lvl + '-' + i;
+      const ans = loadAnswer(key);
+      if(ans.trim().length > 0){ total++; chars += ans.length; }
+      const s = loadSelf(key);
+      if(s > 0){ selfSum += s; selfCount++; }
+    });
+  });
+  const totalSoal = 9;
+  const avg = total ? Math.round(chars / total) : 0;
+  document.getElementById('db-total').textContent = total + '/' + totalSoal;
+  document.getElementById('db-chars').textContent = chars > 999 ? (chars/1000).toFixed(1)+'k' : chars;
+  document.getElementById('db-avg').textContent = avg;
+  document.getElementById('db-self').textContent = selfCount ? (selfSum/selfCount).toFixed(1) + '★' : '—';
+}
+
+function renderEssay(level){
+  currentLevel = level;
+  document.querySelectorAll('.level-tab').forEach(t=>{
+    const on = t.dataset.level === level;
+    t.style.background = on ? 'linear-gradient(135deg,#0e7490,#0891b2)' : 'var(--card2)';
+    t.style.color = on ? '#fff' : 'var(--muted)';
+    t.style.borderColor = on ? 'var(--cyan)' : 'var(--line)';
+    t.style.boxShadow = on ? '0 0 0 3px rgba(34,211,238,.15)' : 'none';
+    t.classList.toggle('active', on);
+  });
+
+  const list = essayData[level].map((item, idx)=>({...item, idx, lvl: level}))
+    .filter(item => currentFilter === 'all' || item.sdg === currentFilter);
+
+  document.getElementById('filter-count').textContent = list.length;
+
+  essayContent.innerHTML = '';
+  if(list.length === 0){
+    essayContent.innerHTML = '<div class="card" style="text-align:center;padding:32px"><p style="color:var(--muted)">Tidak ada soal dengan filter ini pada level ' + level + '.</p></div>';
+    return;
+  }
+
+  const badgeClass = 'badge-' + level;
+
+  list.forEach((item)=>{
+    const card = document.createElement('div');
+    card.className = 'essay-card lvl-' + level;
+    const storeKey = level + '-' + item.idx;
+    const savedVal = loadAnswer(storeKey);
+    const selfVal = loadSelf(storeKey);
+    const answered = savedVal.trim().length > 0;
+    if(answered) card.classList.add('answered');
+
+    const head = document.createElement('div');
+    head.className = 'essay-head';
+    head.innerHTML = `<span class="essay-badge ${badgeClass}">Soal ${item.idx+1}</span><div class="essay-title">${item.title}</div>
+      <span class="answered-pill ${answered?'on':''}" id="ap-${storeKey}">${answered?'✅ Terjawab':'⏳ Belum'}</span>`;
+
+    const body = document.createElement('div');
+    body.className = 'essay-body';
+    body.innerHTML = `<div>${item.body}</div><div class="q-meta">${item.meta}</div>
+      <span class="sdg-tag ${item.sdg}">${item.sdgLabel}</span>`;
+
+    const ansWrap = document.createElement('div');
+    ansWrap.className = 'answer-area';
+    ansWrap.innerHTML = `
+      <div class="ans-label">
+        <span>✍️ Jawaban Anda</span>
+        <span class="char-count" id="cc-${storeKey}">${savedVal.length} karakter</span>
+      </div>
+      <textarea id="ta-${storeKey}" placeholder="Tulis jawaban Anda di sini… (minimal 80 karakter untuk dianggap terjawab)" spellcheck="true">${savedVal}</textarea>
+      <div class="ans-progress"><i id="pb-${storeKey}" style="width:${Math.min(100, savedVal.length/80*100)}%"></i></div>
+      <div class="answer-actions">
+        <button class="save-answer-btn" id="save-${storeKey}">💾 Simpan Jawaban</button>
+        <button class="clear-answer-btn" id="clear-${storeKey}">🗑️ Hapus</button>
+        <span class="save-hint">Auto-save aktif · min 80 karakter</span>
+      </div>
+      <div class="self-assess">
+        <span class="sa-label">Nilai diri sendiri:</span>
+        <div class="sa-stars" data-key="${storeKey}">
+          ${[1,2,3,4,5].map(n=>`<span class="sa-star ${n<=selfVal?'on':''}" data-val="${n}">★</span>`).join('')}
+        </div>
+        <span class="sa-value" id="sav-${storeKey}">${selfVal ? selfVal + '/5' : '—'}</span>
+      </div>
+    `;
+
+    card.appendChild(head);
+    card.appendChild(body);
+    card.appendChild(ansWrap);
+    essayContent.appendChild(card);
+
+    // listeners
+    const ta = ansWrap.querySelector('textarea');
+    const cc = ansWrap.querySelector('.char-count');
+    const pb = ansWrap.querySelector('.ans-progress > i');
+    const ap = head.querySelector('.answered-pill');
+    const saveBtn = ansWrap.querySelector('.save-answer-btn');
+    const clearBtn = ansWrap.querySelector('.clear-answer-btn');
+    const stars = ansWrap.querySelectorAll('.sa-star');
+    const savVal = ansWrap.querySelector('.sa-value');
+
+    if(savedVal){
+      saveBtn.classList.add('saved'); saveBtn.innerHTML = '✅ Tersimpan';
+      ta.classList.add('saved');
+    }
+
+    function refreshMeta(){
+      const len = ta.value.length;
+      cc.textContent = len + ' karakter';
+      cc.classList.remove('ok','low');
+      if(len >= 80) cc.classList.add('ok');
+      else if(len > 0) cc.classList.add('low');
+      pb.style.width = Math.min(100, len/80*100) + '%';
+      pb.classList.toggle('full', len >= 80);
+      const isAns = ta.value.trim().length >= 80;
+      ap.textContent = isAns ? '✅ Terjawab' : (len > 0 ? '⏳ Sedikit lagi' : '⏳ Belum');
+      ap.classList.toggle('on', isAns);
+      card.classList.toggle('answered', isAns);
+    }
+
+    ta.addEventListener('input', ()=>{
+      refreshMeta();
+      // debounce auto-save
+      clearTimeout(ta._t);
+      ta._t = setTimeout(()=>{
+        saveAnswer(storeKey, ta.value);
+        updateDashboard();
+      }, 500);
+    });
+    refreshMeta();
+
+    saveBtn.addEventListener('click', ()=>{
+      saveAnswer(storeKey, ta.value);
+      saveBtn.classList.add('saved'); saveBtn.innerHTML = '✅ Tersimpan';
+      ta.classList.add('saved');
+      updateDashboard();
+      toast('💾 Jawaban disimpan');
+      setTimeout(()=>{ saveBtn.classList.remove('saved'); saveBtn.innerHTML = '💾 Simpan Jawaban'; ta.classList.remove('saved'); }, 1800);
+    });
+
+    clearBtn.addEventListener('click', ()=>{
+      ta.value = '';
+      saveAnswer(storeKey, '');
+      saveBtn.classList.remove('saved'); saveBtn.innerHTML = '💾 Simpan Jawaban';
+      ta.classList.remove('saved');
+      refreshMeta();
+      updateDashboard();
+      toast('🗑️ Jawaban dihapus');
+    });
+
+    stars.forEach(star=>{
+      star.addEventListener('click', ()=>{
+        const val = parseInt(star.dataset.val, 10);
+        saveSelf(storeKey, val);
+        stars.forEach(s=> s.classList.toggle('on', parseInt(s.dataset.val,10) <= val));
+        savVal.textContent = val + '/5';
+        updateDashboard();
+        toast('⭐ Self-assessment: ' + val + '/5');
+      });
+      star.addEventListener('mouseenter', ()=>{
+        const val = parseInt(star.dataset.val, 10);
+        stars.forEach(s=> s.style.color = parseInt(s.dataset.val,10) <= val ? 'var(--amber)' : 'var(--line-hover2)');
+      });
+    });
+    ansWrap.querySelector('.sa-stars').addEventListener('mouseleave', ()=>{
+      stars.forEach(s=> s.style.color = s.classList.contains('on') ? 'var(--amber)' : 'var(--line-hover2)');
+    });
+  });
+
+  updateDashboard();
+}
+
+document.querySelectorAll('.level-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=> renderEssay(tab.dataset.level));
+});
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentFilter = btn.dataset.filter;
+    document.querySelectorAll('.filter-btn').forEach(b=> b.classList.toggle('active', b === btn));
+    renderEssay(currentLevel);
+  });
+});
+
+renderEssay('mudah');
+
+/* ============================================================
+   PROYEK — KANBAN LOGIC
+   ============================================================ */
+const kanbanItems = [
+  { id:'k1', title:'Tentukan tema & tujuan peta', sub:'Satu kalimat masalah spasial', sdg:'sdg11', status:'todo' },
+  { id:'k2', title:'Siapkan data spasial', sub:'GeoJSON / CSV lat-lng + atribut', sdg:'sdg11', status:'todo' },
+  { id:'k3', title:'Inisialisasi peta Leaflet', sub:'Center, zoom, basemap tanpa error', sdg:'sdg9', status:'todo' },
+  { id:'k4', title:'Tambahkan layer control', sub:'2 basemap + 1 layer tematik', sdg:'sdg9', status:'todo' },
+  { id:'k5', title:'Marker + popup informatif', sub:'Atribut relevan per fitur', sdg:'sdg11', status:'todo' },
+  { id:'k6', title:'Legenda & atribusi', sub:'Sumber data & simbol dijelaskan', sdg:'sdg11', status:'todo' },
+  { id:'k7', title:'Interaksi tambahan', sub:'Geolocation / ukur / filter', sdg:'sdg9', status:'todo' },
+  { id:'k8', title:'Uji responsif & aksesibilitas', sub:'Layar 375px, kontras, atribusi', sdg:'sdg11', status:'todo' },
+  { id:'k9', title:'Dokumentasi & publikasi', sub:'README + GitHub Pages', sdg:'sdg9', status:'todo' }
+];
+const KANBAN_STORE = 'sigweb-kanban-v1';
+
+function loadKanban(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(KANBAN_STORE));
+    if(saved && Array.isArray(saved)){
+      // merge by id
+      return kanbanItems.map(item=>{
+        const s = saved.find(x=> x.id === item.id);
+        return s ? {...item, status: s.status} : {...item};
+      });
+    }
+  }catch(e){}
+  return kanbanItems.map(x=>({...x}));
+}
+function saveKanban(arr){
+  try{ localStorage.setItem(KANBAN_STORE, JSON.stringify(arr.map(x=>({id:x.id, status:x.status})))); }catch(e){}
+}
+let kanbanState = loadKanban();
+
+function renderKanban(){
+  const cols = { todo:'col-todo', doing:'col-doing', done:'col-done' };
+  Object.keys(cols).forEach(col=>{
+    const el = document.getElementById(cols[col]);
+    el.innerHTML = '';
+    const items = kanbanState.filter(x=> x.status === col);
+    document.getElementById('count-' + col).textContent = items.length;
+    if(items.length === 0){
+      el.innerHTML = '<div style="text-align:center;padding:20px 10px;color:var(--muted);font-size:.76rem;font-style:italic">Kosong</div>';
+    }
+    items.forEach(item=>{
+      const card = document.createElement('div');
+      card.className = 'kanban-card';
+      card.dataset.status = col;
+      const chips = '<span class="kc-chip ' + item.sdg + '">' + (item.sdg === 'sdg9' ? 'SDG 9' : 'SDG 11') + '</span>';
+      let actions = '';
+      if(col === 'todo') actions = '<button class="kc-mini-btn next" data-act="start">▶ Mulai</button>';
+      else if(col === 'doing') actions = '<button class="kc-mini-btn done-btn" data-act="done">✅ Selesai</button><button class="kc-mini-btn" data-act="back">↩ To-Do</button>';
+      else if(col === 'done') actions = '<button class="kc-mini-btn" data-act="reopen">↩ Buka lagi</button>';
+      card.innerHTML = `
+        <div class="kc-card-title">${item.title}</div>
+        <div class="kc-card-sub">${item.sub}</div>
+        <div class="kc-card-meta">${chips}</div>
+        <div class="kc-card-actions">${actions}</div>
+      `;
+      card.addEventListener('click', (e)=>{
+        if(e.target.classList.contains('kc-mini-btn')) return;
+        advance(item.id);
+      });
+      card.querySelectorAll('.kc-mini-btn').forEach(btn=>{
+        btn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          const act = btn.dataset.act;
+          if(act === 'start') setStatus(item.id, 'doing');
+          else if(act === 'done') setStatus(item.id, 'done');
+          else if(act === 'back') setStatus(item.id, 'todo');
+          else if(act === 'reopen') setStatus(item.id, 'doing');
+        });
+      });
+      el.appendChild(card);
+    });
+  });
+  updateProgress();
+}
+
+function advance(id){
+  const item = kanbanState.find(x=> x.id === id);
+  if(!item) return;
+  if(item.status === 'todo') setStatus(id, 'doing');
+  else if(item.status === 'doing') setStatus(id, 'done');
+  else setStatus(id, 'todo');
+}
+
+function setStatus(id, status){
+  const item = kanbanState.find(x=> x.id === id);
+  if(!item) return;
+  item.status = status;
+  saveKanban(kanbanState);
+  renderKanban();
+  const label = status === 'done' ? '✅ Selesai' : (status === 'doing' ? '⚙️ In Progress' : '📋 To-Do');
+  toast(label + ': ' + item.title);
+}
+
+function updateProgress(){
+  const total = kanbanState.length;
+  const done = kanbanState.filter(x=> x.status === 'done').length;
+  const doing = kanbanState.filter(x=> x.status === 'doing').length;
+  const pct = Math.round(done / total * 100);
+
+  // ring
+  const ringFg = document.getElementById('ringFg');
+  const circumference = 2 * Math.PI * 34; // ~213.6
+  ringFg.setAttribute('stroke-dashoffset', circumference * (1 - pct/100));
+  document.getElementById('ringTxt').textContent = pct + '%';
+
+  document.getElementById('projSummary').textContent =
+    done + ' dari ' + total + ' kartu selesai · ' + doing + ' sedang dikerjakan' +
+    (pct === 100 ? ' 🎉' : '');
+
+  // SDG bars
+  const sdg9Total = kanbanState.filter(x=> x.sdg === 'sdg9').length;
+  const sdg9Done = kanbanState.filter(x=> x.sdg === 'sdg9' && x.status === 'done').length;
+  const sdg11Total = kanbanState.filter(x=> x.sdg === 'sdg11').length;
+  const sdg11Done = kanbanState.filter(x=> x.sdg === 'sdg11' && x.status === 'done').length;
+  const sdg9Pct = sdg9Total ? Math.round(sdg9Done/sdg9Total*100) : 0;
+  const sdg11Pct = sdg11Total ? Math.round(sdg11Done/sdg11Total*100) : 0;
+  document.getElementById('sdg9Bar').style.width = sdg9Pct + '%';
+  document.getElementById('sdg11Bar').style.width = sdg11Pct + '%';
+  document.getElementById('sdg9Val').textContent = sdg9Pct + '%';
+  document.getElementById('sdg11Val').textContent = sdg11Pct + '%';
+
+  if(pct === 100){
+    setTimeout(()=> toast('🎉 Proyek Tahap 1 selesai! Siap dikumpulkan.'), 300);
+  }
+}
+
+document.getElementById('resetKanban').addEventListener('click', ()=>{
+  if(!confirm('Reset semua kartu Kanban ke To-Do?')) return;
+  kanbanState = kanbanItems.map(x=>({...x, status:'todo'}));
+  saveKanban(kanbanState);
+  renderKanban();
+  toast('🔄 Board direset');
+});
+
+renderKanban();
+
+/* ============================================================
+   KUIS (compact)
+   ============================================================ */
+const quizData = [
+  { q:'Library JavaScript paling ringan untuk peta interaktif adalah…',
+    opts:['OpenLayers','Leaflet','Mapbox GL JS','CesiumJS'], a:1,
+    exp:'Leaflet ~42 KB (gzip), mudah dipelajari.' },
+  { q:'Perintah menambahkan marker pada koordinat tertentu…',
+    opts:['L.marker([lat,lng]).addTo(map)','L.addMarker(lat,lng)','map.marker(lat,lng)','L.point([lat,lng])'], a:0,
+    exp:'L.marker() membuat marker, .addTo(map) menambahkannya.' },
+  { q:'Method menampilkan popup saat marker diklik…',
+    opts:['.bindTooltip()','.openInfo()','.bindPopup()','.showWindow()'], a:2,
+    exp:'bindPopup() mengikat konten HTML saat marker diklik.' },
+  { q:'Objek Leaflet untuk memuat basemap raster…',
+    opts:['L.geoJSON','L.tileLayer','L.imageOverlay','L.canvas'], a:1,
+    exp:'L.tileLayer() memuat tile dari OSM/CARTO/Esri.' },
+  { q:'Kelebihan utama OpenLayers dibanding Leaflet…',
+    opts:['Ukurannya lebih kecil','API lebih sederhana','Dukungan proyeksi kustom & OGC','Tidak butuh tile'], a:2,
+    exp:'OpenLayers unggul di proyeksi kustom, WMS/WFS, vektor besar.' }
+];
+let answered = 0, score = 0;
+const quizEl = document.getElementById('quiz');
+const scoreEl = document.getElementById('score');
+const scoreMsgEl = document.getElementById('scoreMsg');
+function renderQuiz(){
+  quizEl.innerHTML = ''; answered = 0; score = 0;
+  scoreEl.textContent = '0';
+  scoreMsgEl.textContent = 'Belum ada jawaban. Ayo mulai!';
+  quizData.forEach((item, qi)=>{
+    const box = document.createElement('div');
+    box.className = 'qbox';
+    box.innerHTML = `<div class="qnum">Soal ${qi+1} dari ${quizData.length}</div><div class="qtext">${item.q}</div>`;
+    const exp = document.createElement('div');
+    exp.className = 'explain';
+    exp.textContent = '💡 ' + item.exp;
+    item.opts.forEach((opt, oi)=>{
+      const el = document.createElement('div');
+      el.className = 'opt';
+      el.innerHTML = '<span class="ltr">' + String.fromCharCode(65+oi) + '</span><span>' + opt + '</span>';
+      el.addEventListener('click', ()=>{
+        if(box.dataset.done) return;
+        box.dataset.done = '1'; answered++;
+        if(oi === item.a){ el.classList.add('correct'); score++; scoreEl.textContent = score; }
+        else { el.classList.add('wrong'); box.querySelectorAll('.opt')[item.a].classList.add('correct'); }
+        box.querySelectorAll('.opt').forEach(o=> o.classList.add('locked'));
+        exp.classList.add('show');
+        if(answered === quizData.length){
+          const pct = Math.round(score/quizData.length*100);
+          let msg = 'Nilai: ' + pct + '% — ';
+          if(pct === 100) msg += 'Luar biasa! 🎉';
+          else if(pct >= 70) msg += 'Bagus! 👍';
+          else msg += 'Pelajari kembali materi. 💪';
+          scoreMsgEl.textContent = msg;
+          toast('🎯 Kuis selesai: ' + score + '/' + quizData.length);
+        } else {
+          scoreMsgEl.textContent = 'Terjawab ' + answered + ' dari ' + quizData.length + ' soal.';
+        }
+      });
+      box.appendChild(el);
+    });
+    box.appendChild(exp);
+    quizEl.appendChild(box);
+  });
+}
+renderQuiz();
+document.getElementById('btnResetQuiz').addEventListener('click', ()=>{ renderQuiz(); toast('🔄 Kuis diulang'); });
+
+setTimeout(()=> toast('👋 Coba tulis essay SDG & pindahkan kartu Kanban!'), 800);
+</script>
+</body>
+</html>
